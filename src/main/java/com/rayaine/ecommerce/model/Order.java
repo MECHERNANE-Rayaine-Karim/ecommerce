@@ -7,6 +7,11 @@ import java.time.LocalDateTime;
 @Table(name = "orders")
 public class Order {
 
+
+    public enum Status{
+        PENDING,DELIVERED,CANCELLED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
@@ -17,7 +22,9 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false,updatable = false)
     private User user;
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
 
     public Order(){
 
@@ -53,5 +60,13 @@ public class Order {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }

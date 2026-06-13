@@ -21,7 +21,7 @@ public class Product {
     private Double productPrice;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status productStatus;
+    private Status status;
 
     public Product(){
 
@@ -61,12 +61,12 @@ public class Product {
         this.productPrice = productPrice;
     }
 
-    public Status getProductStatus() {
-        return productStatus;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setProductStatus(Status productStatus) {
-        this.productStatus = productStatus;
+    public void setStatus(Status productStatus) {
+        this.status = productStatus;
     }
 
 }
