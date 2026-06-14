@@ -18,7 +18,7 @@ public class Product {
     private String productName;
     private String productDescription;
     @Column(nullable = false)
-    private Double productPrice;
+    private double productPrice;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
@@ -53,11 +53,11 @@ public class Product {
         this.productDescription = productDescription;
     }
 
-    public Double getProductPrice() {
+    public double getProductPrice() {
         return productPrice;
     }
 
-    public void setProductPrice(Double productPrice) {
+    public void setProductPrice(double productPrice) {
         this.productPrice = productPrice;
     }
 
