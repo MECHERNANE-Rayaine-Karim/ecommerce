@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 public class Order {
 
 
+
+
     public enum Status{
         PENDING,DELIVERED,CANCELLED
     }
@@ -19,6 +21,8 @@ public class Order {
     private LocalDateTime createdAt;
     @Column(nullable = false)
     private LocalDateTime estimatedArrival;
+    @Column(nullable = false)
+    private String destination;
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false,updatable = false)
     private User user;
@@ -68,5 +72,13 @@ public class Order {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 }
