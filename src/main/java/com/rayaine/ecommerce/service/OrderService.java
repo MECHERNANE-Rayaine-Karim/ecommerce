@@ -1,6 +1,8 @@
 package com.rayaine.ecommerce.service;
 
 
+import com.rayaine.ecommerce.dto.OrderDto;
+import com.rayaine.ecommerce.dto.OrderItemDto;
 import com.rayaine.ecommerce.model.Order;
 import com.rayaine.ecommerce.model.OrderItem;
 import com.rayaine.ecommerce.model.Product;
@@ -17,7 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -29,7 +33,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
-    public OrderService(UserRepository userRepository, OrderItemRepository orderItemRepository, OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderService(UserRepository userRepository, OrderItemRepository orderItemRepository, OrderRepository orderRepository, ProductRepository productRepository ) {
         this.userRepository = userRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderRepository = orderRepository;
@@ -100,12 +104,17 @@ public class OrderService {
         return orderRepository.findAll(specification,pageable);
     }
 
-    public Order getOrderDetails( Long orderId ) throws Exception {
+    public OrderDto getOrderDetails( Long orderId ) throws Exception {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () ->  new Exception("order not found")
         );
         User user = this.getCurrentUser();
         if( !user.getUserId().equals(order.getUser().getUserId())) throw new Exception("invalid operation");
-        return order;
+        List<OrderItemDto> orderItemDtoList = new ArrayList<>();
+        for( OrderItem orderItem : orderItemRepository.findByOrder(order)){
+            orderItemDtoList.add(new OrderItemDto(orderItem));
+        }
+        OrderDto orderDto = new OrderDto(order,orderItemDtoList);
+        return orderDto;
     }
 }
