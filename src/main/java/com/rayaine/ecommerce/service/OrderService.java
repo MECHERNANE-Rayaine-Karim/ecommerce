@@ -4,17 +4,23 @@ package com.rayaine.ecommerce.service;
 import com.rayaine.ecommerce.model.Order;
 import com.rayaine.ecommerce.model.OrderItem;
 import com.rayaine.ecommerce.model.Product;
+import com.rayaine.ecommerce.model.User;
 import com.rayaine.ecommerce.repository.OrderItemRepository;
 import com.rayaine.ecommerce.repository.OrderRepository;
 import com.rayaine.ecommerce.repository.ProductRepository;
 import com.rayaine.ecommerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
+
 
 @Service
 public class OrderService {
@@ -31,6 +37,14 @@ public class OrderService {
     }
 
 
+    private User getCurrentUser() throws Exception {
+        User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(
+                () -> new Exception("user not found")
+        );
+        return user;
+    }
+
+
     @Transactional
     public void placeOrder(Map<Long,Integer> selectedProducts, String destination) throws Exception {
         if(  selectedProducts == null || selectedProducts.isEmpty() ) throw new Exception("Order must contain at least on item");
@@ -43,9 +57,7 @@ public class OrderService {
             else availableProducts.put(product,entry.getValue());
         }
         Order order = new Order();
-        order.setUser(userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(
-                () -> new Exception("user not found")
-        ));
+        order.setUser(this.getCurrentUser());
         order.setDestination(destination);
         order.setCreatedAt(LocalDateTime.now());
         order.setEstimatedArrival(LocalDateTime.now().plusDays(5));
@@ -59,5 +71,41 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItemRepository.save(orderItem);
         }
+    }
+
+    @Transactional
+    public void cancelOrder( Long orderId ) throws Exception{
+        Order order = orderRepository.findById(orderId).orElseThrow(
+                () ->  new Exception("order not found")
+        );
+        User user = this.getCurrentUser();
+        if( !user.getUserId().equals(order.getUser().getUserId())) throw new Exception("invalid operation");
+        if( !order.getStatus().equals(Order.Status.PENDING) ){
+            throw new Exception("invalid operation, order is already " + String.valueOf(order.getStatus()));
+        }
+        if( !order.getCreatedAt().plusHours(30).isAfter(LocalDateTime.now())){
+            throw new Exception("invalid operation, time allowed for cancelation is expire ");
+        }
+        order.setStatus(Order.Status.CANCELLED);
+        orderRepository.save(order);
+    }
+
+    public Page<Order> getOrders(Order.Status status, Pageable pageable) throws Exception{
+        User user = this.getCurrentUser();
+        Specification<Order> specification = (root, query, criteriaBuilder ) -> criteriaBuilder.conjunction();
+        if( status != null ){
+            specification = specification.and((root,query,cb)->cb.equal(root.get("status"),status));
+        }
+        specification = specification.and((root,query,cb)->cb.equal(root.get("user"),user));
+        return orderRepository.findAll(specification,pageable);
+    }
+
+    public Order getOrderDetails( Long orderId ) throws Exception {
+        Order order = orderRepository.findById(orderId).orElseThrow(
+                () ->  new Exception("order not found")
+        );
+        User user = this.getCurrentUser();
+        if( !user.getUserId().equals(order.getUser().getUserId())) throw new Exception("invalid operation");
+        return order;
     }
 }

@@ -81,4 +81,14 @@ public class Order {
     public void setDestination(String destination) {
         this.destination = destination;
     }
+
+
+    @Override
+    public String toString() {
+        return  "Order: " + this.getOrderId() + "\n"
+                +"created at:  " + this.getCreatedAt() + "\n"
+                +"estimated arrival: " + this.getEstimatedArrival() + "\n"
+                +"status: " + this.getStatus() + "\n"
+                +"destination: "+this.getDestination();
+    }
 }
