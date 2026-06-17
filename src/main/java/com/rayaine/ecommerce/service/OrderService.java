@@ -3,6 +3,7 @@ package com.rayaine.ecommerce.service;
 
 import com.rayaine.ecommerce.dto.OrderDto;
 import com.rayaine.ecommerce.dto.OrderItemDto;
+import com.rayaine.ecommerce.exception.*;
 import com.rayaine.ecommerce.model.Order;
 import com.rayaine.ecommerce.model.OrderItem;
 import com.rayaine.ecommerce.model.Product;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,22 +43,22 @@ public class OrderService {
     }
 
 
-    private User getCurrentUser() throws Exception {
+    private User getCurrentUser() {
         User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(
-                () -> new Exception("user not found")
+                () -> new UsernameNotFoundException("user not found")
         );
         return user;
     }
 
 
     @Transactional
-    public void placeOrder(Map<Long,Integer> selectedProducts, String destination) throws Exception {
-        if(  selectedProducts == null || selectedProducts.isEmpty() ) throw new Exception("Order must contain at least on item");
+    public void placeOrder(Map<Long,Integer> selectedProducts, String destination)  {
+        if(  selectedProducts == null || selectedProducts.isEmpty() ) throw new InvalidOrderOperationException("Order must contain at least on item");
         Map<Product,Integer> availableProducts = new HashMap<>();
         for(Map.Entry<Long,Integer> entry : selectedProducts.entrySet()){
-            Product product = productRepository.findById(entry.getKey()).orElseThrow(()->new Exception("Product not found"));
+            Product product = productRepository.findById(entry.getKey()).orElseThrow(()->new ProductNotFoundException("Product not found"));
             if( !product.getStatus().equals(Product.Status.AVAILABLE)) {
-                throw new Exception("Product " + product.getProductName() + " is not available");
+                throw new UnavailableProductException("Product " + product.getProductName() + " is not available");
             }
             else availableProducts.put(product,entry.getValue());
         }
@@ -78,23 +80,23 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder( Long orderId ) throws Exception{
+    public void cancelOrder( Long orderId ) {
         Order order = orderRepository.findById(orderId).orElseThrow(
-                () ->  new Exception("order not found")
+                () ->  new OrderNotFoundException("order not found")
         );
         User user = this.getCurrentUser();
-        if( !user.getUserId().equals(order.getUser().getUserId())) throw new Exception("invalid operation");
+        if( !user.getUserId().equals(order.getUser().getUserId())) throw new UnauthorizedOrderAccessException("invalid operation");
         if( !order.getStatus().equals(Order.Status.PENDING) ){
-            throw new Exception("invalid operation, order is already " + String.valueOf(order.getStatus()));
+            throw new InvalidOrderOperationException("invalid operation, order is already " + String.valueOf(order.getStatus()));
         }
         if( !order.getCreatedAt().plusHours(30).isAfter(LocalDateTime.now())){
-            throw new Exception("invalid operation, time allowed for cancelation is expire ");
+            throw new InvalidOrderOperationException("invalid operation, time allowed for cancelation is expire ");
         }
         order.setStatus(Order.Status.CANCELLED);
         orderRepository.save(order);
     }
 
-    public Page<Order> getOrders(Order.Status status, Pageable pageable) throws Exception{
+    public Page<Order> getOrders(Order.Status status, Pageable pageable) {
         User user = this.getCurrentUser();
         Specification<Order> specification = (root, query, criteriaBuilder ) -> criteriaBuilder.conjunction();
         if( status != null ){
@@ -104,12 +106,14 @@ public class OrderService {
         return orderRepository.findAll(specification,pageable);
     }
 
-    public OrderDto getOrderDetails( Long orderId ) throws Exception {
+    public OrderDto getOrderDetails( Long orderId ) {
         Order order = orderRepository.findById(orderId).orElseThrow(
-                () ->  new Exception("order not found")
+                () ->  new OrderNotFoundException("order not found")
         );
         User user = this.getCurrentUser();
-        if( !user.getUserId().equals(order.getUser().getUserId())) throw new Exception("invalid operation");
+        if( !user.getUserId().equals(order.getUser().getUserId())) {
+            throw new UnauthorizedOrderAccessException("invalid operation");
+        }
         List<OrderItemDto> orderItemDtoList = new ArrayList<>();
         for( OrderItem orderItem : orderItemRepository.findByOrder(order)){
             orderItemDtoList.add(new OrderItemDto(orderItem));

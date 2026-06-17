@@ -1,5 +1,6 @@
 package com.rayaine.ecommerce.service;
 
+import com.rayaine.ecommerce.exception.ProductNotFoundException;
 import com.rayaine.ecommerce.model.Product;
 import com.rayaine.ecommerce.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -22,8 +23,9 @@ public class ProductService {
 
     }
 
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void addProduct( String productName, String productDescription, double productPrice, Product.Status status) throws Exception {
+    public void addProduct( String productName, String productDescription, double productPrice, Product.Status status)  {
             Product product = new Product();
             product.setProductName(productName);
             product.setProductDescription(productDescription);
@@ -32,11 +34,11 @@ public class ProductService {
             productRepository.save(product);
     }
 
-
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteProduct( Long productId ) throws Exception {
+    public void deleteProduct( Long productId )  {
             Product product = productRepository.findById(productId).orElseThrow(
-                    () -> new Exception("product not found")
+                    () -> new ProductNotFoundException("product not found")
             );
             productRepository.delete(product);
     }
@@ -44,9 +46,9 @@ public class ProductService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void changePrice( Long productId, double newPrice ) throws Exception {
+    public void changePrice( Long productId, double newPrice )  {
             Product product = productRepository.findById(productId).orElseThrow(
-                    () -> new Exception("product not found")
+                    () -> new ProductNotFoundException("product not found")
             );
             product.setProductPrice(newPrice);
             productRepository.save(product);
@@ -54,9 +56,9 @@ public class ProductService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public void changeStatus( Long productId, Product.Status newStatus ) throws Exception {
+    public void changeStatus( Long productId, Product.Status newStatus )  {
         Product product = productRepository.findById(productId).orElseThrow(
-                () -> new Exception("product not found")
+                () -> new ProductNotFoundException("product not found")
         );
         product.setStatus(newStatus);
         productRepository.save(product);
