@@ -9,7 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -75,8 +81,6 @@ public class ProductServiceTest {
 
 
 
-
-
     @Test
     void changeStatus_productNotFound_throwsException(){
         Long productId = 1L;
@@ -101,5 +105,129 @@ public class ProductServiceTest {
     }
 
 
+
+
+    @Test
+    void getCatalogue_allFiltersProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Product.Status status = Product.Status.AVAILABLE;
+        Double maxPrice = 30.0;
+        Double minPrice = 15.0;
+        Product product1 = new Product();
+        product1.setStatus(Product.Status.AVAILABLE);
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setProductPrice(22);
+        product2.setStatus(Product.Status.AVAILABLE);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(status,minPrice,maxPrice,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+
+    @Test
+    void getCatalogue_noProvidedFilters_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Product product1 = new Product();
+        Product product2 = new Product();
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(null,null,null,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+    @Test
+    void getCatalogue_statusProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Product.Status status = Product.Status.AVAILABLE;
+        Product product1 = new Product();
+        product1.setStatus(Product.Status.AVAILABLE);
+        Product product2 = new Product();
+        product2.setStatus(Product.Status.AVAILABLE);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(status,null,null,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+    @Test
+    void getCatalogue_minPriceAndMaxPriceProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Double maxPrice = 30.0;
+        Double minPrice = 15.0;
+        Product product1 = new Product();
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setProductPrice(22);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(null,minPrice,maxPrice,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+
+    @Test
+    void getCatalogue_minPriceProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Double minPrice = 15.0;
+        Product product1 = new Product();
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setProductPrice(22);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(null,minPrice,null,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+    @Test
+    void getCatalogue_maxPriceAndStatusProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Double maxPrice = 30.0;
+        Product.Status status = Product.Status.AVAILABLE;
+        Product product1 = new Product();
+        product1.setStatus(Product.Status.AVAILABLE);
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setStatus(Product.Status.AVAILABLE);
+        product2.setProductPrice(22);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(status,null,maxPrice,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+
+    @Test
+    void getCatalogue_maxPriceProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Double maxPrice = 30.0;
+        Product product1 = new Product();
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setProductPrice(22);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(null,null,maxPrice,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
+
+    @Test
+    void getCatalogue_minPriceAndStatusProvided_getFilteredProducts(){
+        Pageable pageable = PageRequest.of(0,10);
+        Double minPrice = 15.0;
+        Product.Status status = Product.Status.AVAILABLE;
+        Product product1 = new Product();
+        product1.setStatus(Product.Status.AVAILABLE);
+        product1.setProductPrice(20);
+        Product product2 = new Product();
+        product2.setStatus(Product.Status.AVAILABLE);
+        product2.setProductPrice(22);
+        Page<Product> expectedPage = new PageImpl<>(List.of(product1,product2));
+        when(productRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
+        Page<Product> returnedPage = productService.getCatalogue(status,minPrice,null,pageable);
+        assertEquals(expectedPage,returnedPage);
+    }
 
 }
