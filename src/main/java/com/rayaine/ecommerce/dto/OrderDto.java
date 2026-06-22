@@ -4,6 +4,7 @@ import com.rayaine.ecommerce.model.Order;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public class OrderDto {
 
@@ -66,5 +67,11 @@ public class OrderDto {
 
     public List<OrderItemDto> getOrderItemList() {
         return orderItemList;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        OrderDto orderDto = (OrderDto) obj;
+        return (Objects.equals(this.orderId, orderDto.getOrderId()));
     }
 }
