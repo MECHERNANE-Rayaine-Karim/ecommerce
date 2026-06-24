@@ -25,6 +25,14 @@ public class OrderDto {
         this.orderItemList = orderItemList;
     }
 
+    public OrderDto(Order order ){
+        this.orderId = order.getOrderId();
+        this.status = order.getStatus();
+        this.destination = order.getDestination();
+        this.createdAt = order.getCreatedAt();
+        this.estimatedArrival = order.getEstimatedArrival();
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

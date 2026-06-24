@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
+
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -42,6 +44,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedOrderAccessException.class)
     public ResponseEntity<String> handleUnauthorizedOrderAccess( UnauthorizedOrderAccessException unauthorizedOrderAccessException){
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(unauthorizedOrderAccessException.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDenied( AccessDeniedException accessDeniedException){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessDeniedException.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

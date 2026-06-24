@@ -14,8 +14,11 @@ import com.rayaine.ecommerce.repository.ProductRepository;
 import com.rayaine.ecommerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -50,7 +53,7 @@ public class OrderService {
         return user;
     }
 
-
+    @PreAuthorize("hasRole('USER')")
     @Transactional
     public void placeOrder(Map<Long,Integer> selectedProducts, String destination)  {
         if(  selectedProducts == null || selectedProducts.isEmpty() ) throw new InvalidOrderOperationException("Order must contain at least on item");
@@ -96,14 +99,18 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    public Page<Order> getOrders(Order.Status status, Pageable pageable) {
+    public Page<OrderDto> getOrders(Order.Status status, Pageable pageable) {
         User user = this.getCurrentUser();
         Specification<Order> specification = (root, query, criteriaBuilder ) -> criteriaBuilder.conjunction();
         if( status != null ){
             specification = specification.and((root,query,cb)->cb.equal(root.get("status"),status));
         }
         specification = specification.and((root,query,cb)->cb.equal(root.get("user"),user));
-        return orderRepository.findAll(specification,pageable);
+        List<OrderDto> ordersList = new ArrayList<>();
+        for(Order order : orderRepository.findAll(specification,pageable) ){
+            ordersList.add(new OrderDto(order));
+        }
+        return new PageImpl<>(ordersList,PageRequest.of(0,10),ordersList.size());
     }
 
     public OrderDto getOrderDetails( Long orderId ) {
