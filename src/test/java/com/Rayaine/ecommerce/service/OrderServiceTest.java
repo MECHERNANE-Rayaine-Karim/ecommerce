@@ -299,11 +299,14 @@ public class OrderServiceTest {
         Order.Status status = Order.Status.DELIVERED;
         Order order1 = new Order();
         order1.setStatus(Order.Status.DELIVERED);
+        OrderDto orderDto1 = new OrderDto(order1);
         Order order2 = new Order();
         order2.setStatus(Order.Status.DELIVERED);
-        Page<Order> expectedPage = new PageImpl<>(List.of(order1,order2));
-        when(orderRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
-        Page<Order> returnedPage = orderService.getOrders(status,pageable);
+        OrderDto orderDto2 = new OrderDto(order2);
+        Page<OrderDto> expectedPage = new PageImpl<>(List.of(orderDto1,orderDto2),PageRequest.of(0,10),2);
+        Page<Order> expectedOrdersPage = new PageImpl<>(List.of(order1,order2),PageRequest.of(0,10),2);
+        when(orderRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedOrdersPage);
+        Page<OrderDto> returnedPage = orderService.getOrders(status,pageable);
         assertEquals(expectedPage,returnedPage);
     }
 
@@ -316,13 +319,14 @@ public class OrderServiceTest {
         Pageable pageable = PageRequest.of(0,10);
         Order order1 = new Order();
         order1.setStatus(Order.Status.DELIVERED);
+        OrderDto orderDto1 = new OrderDto(order1);
         Order order2 = new Order();
-        order2.setStatus(Order.Status.CANCELLED);
-        Order order3 = new Order();
-        order3.setStatus(Order.Status.PENDING);
-        Page<Order> expectedPage = new PageImpl<>(List.of(order1,order2,order3));
-        when(orderRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedPage);
-        Page<Order> returnedPage = orderService.getOrders(null,pageable);
+        order2.setStatus(Order.Status.DELIVERED);
+        OrderDto orderDto2 = new OrderDto(order2);
+        Page<OrderDto> expectedPage = new PageImpl<>(List.of(orderDto1,orderDto2),PageRequest.of(0,10),2);
+        Page<Order> expectedOrdersPage = new PageImpl<>(List.of(order1,order2),PageRequest.of(0,10),2);
+        when(orderRepository.findAll(any(Specification.class),eq(pageable))).thenReturn(expectedOrdersPage);
+        Page<OrderDto> returnedPage = orderService.getOrders(null,pageable);
         assertEquals(expectedPage,returnedPage);
     }
 

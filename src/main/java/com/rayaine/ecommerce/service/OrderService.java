@@ -82,6 +82,7 @@ public class OrderService {
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
     @Transactional
     public void cancelOrder( Long orderId ) {
         Order order = orderRepository.findById(orderId).orElseThrow(
@@ -99,6 +100,7 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    @PreAuthorize("hasRole('USER')")
     public Page<OrderDto> getOrders(Order.Status status, Pageable pageable) {
         User user = this.getCurrentUser();
         Specification<Order> specification = (root, query, criteriaBuilder ) -> criteriaBuilder.conjunction();
@@ -113,6 +115,7 @@ public class OrderService {
         return new PageImpl<>(ordersList,PageRequest.of(0,10),ordersList.size());
     }
 
+    @PreAuthorize("hasRole('USER')")
     public OrderDto getOrderDetails( Long orderId ) {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () ->  new OrderNotFoundException("order not found")

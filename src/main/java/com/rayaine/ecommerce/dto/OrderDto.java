@@ -31,6 +31,7 @@ public class OrderDto {
         this.destination = order.getDestination();
         this.createdAt = order.getCreatedAt();
         this.estimatedArrival = order.getEstimatedArrival();
+        this.orderItemList = null;
     }
 
     public LocalDateTime getCreatedAt() {
