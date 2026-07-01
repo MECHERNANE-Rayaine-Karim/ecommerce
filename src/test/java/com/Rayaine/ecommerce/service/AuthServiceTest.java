@@ -80,10 +80,11 @@ class AuthServiceTest {
     void login_whenAuthenticatePass_tokenGetGenerated(){
         String username = "username";
         String password = "password";
+        User.Role role = User.Role.USER;
         Authentication mockAuth = mock(Authentication.class);
         String expectedToken = "returnedToken";
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(mockAuth);
-        when(jwtUtil.generateToken(username)).thenReturn(expectedToken);
+        when(jwtUtil.generateToken(username,role)).thenReturn(expectedToken);
         String returnedToken = authService.login(username, password);
         assertEquals(expectedToken,returnedToken);
     }

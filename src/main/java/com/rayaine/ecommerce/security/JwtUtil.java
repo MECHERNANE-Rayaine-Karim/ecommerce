@@ -1,5 +1,6 @@
 package com.rayaine.ecommerce.security;
 
+import com.rayaine.ecommerce.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,8 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    public String generateToken( String username ){
-        return builder().subject(username).issuedAt(new Date()).
+    public String generateToken( String username , User.Role role ){
+        return builder().subject(username).claim("role",role.name()).issuedAt(new Date()).
                 expiration(new Date(System.currentTimeMillis() + expiration)).
                 signWith(getSigningKey()).compact();
     }
